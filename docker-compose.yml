@@ -1,0 +1,60 @@
+version: '3'
+services:
+  chirper:
+    build:
+      context: .
+      dockerfile: cmd/standalone/Dockerfile
+    container_name: chirper
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    networks:
+      - chirper_network
+    # env_file: cmd/standalone/.env
+    environment:
+      - DB_HOST=postgresql_development
+      - DB_NAME=chirper_development
+      - DB_USER=chirper
+      - DB_PASSWORD=chirper123
+      - DB_PORT=5432
+      - DB_SSL_MODE=disable
+      - TEST_DB_HOST=postgresql_test
+      - TEST_DB_NAME=chirper_test
+      - TEST_DB_USER=chirper
+      - TEST_DB_PASSWORD=chirper123
+      - TEST_DB_PORT=5432
+      - TEST_DB_SSL_MODE=disable
+    stdin_open: true
+    tty: true
+    depends_on:
+      - postgresql_development
+      - postgresql_test
+  postgresql_development:
+    image: postgres:11.5
+    container_name: postgresql_development
+    ports:
+      - "6000:5432"
+    networks:
+      - chirper_network
+    volumes:
+      - postgresql_development_data_volume:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=chirper_development
+      - POSTGRES_USER=chirper
+      - POSTGRES_PASSWORD=chirper123
+  postgresql_test:
+    image: postgres:11.5
+    container_name: postgresql_test
+    ports:
+      - "6001:5432"
+    networks:
+      - chirper_network
+    environment:
+      - POSTGRES_DB=chirper_test
+      - POSTGRES_USER=chirper
+      - POSTGRES_PASSWORD=chirper123
+volumes:
+  postgresql_development_data_volume:
+networks:
+  chirper_network:
